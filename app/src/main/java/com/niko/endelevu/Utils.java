@@ -1,4 +1,4 @@
-package com.nikogreen.endelevu;
+package com.niko.endelevu;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

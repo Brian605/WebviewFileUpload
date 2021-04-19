@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FBFBFB"
+    android:background="#c0c0c0"
     tools:context=".SplashActivity">
   <de.hdodenhof.circleimageview.CircleImageView
       android:layout_width="100dp"
@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Endelevu"
-        android:textColor="#E91E63"
+        android:textColor="#4CAF50"
         android:textSize="25dp"
         android:gravity="center"/>
 
@@ -27,7 +27,7 @@
         android:indeterminate="true"
         android:layout_marginTop="30dp"
         android:indeterminateDuration="3000"
-        android:indeterminateTint="#E91E63"
+        android:indeterminateTint="#4CAF50"
         android:indeterminateTintMode="src_atop">
 
     </ProgressBar>

@@ -1,4 +1,4 @@
-package com.nikogreen.endelevu;
+package com.niko.endelevu;
 
 import android.Manifest;
 import android.app.Activity;
@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
@@ -202,12 +201,7 @@ public class IntroActivity extends Activity {
                             //Code
                         }
                         if(report.isAnyPermissionPermanentlyDenied()){
-                            AlertDialog alertDialog= new AlertDialog.Builder(IntroActivity.this).create();
-                            alertDialog.setCancelable(false);
-                            alertDialog.setTitle("Permission Denial");
-                            alertDialog.setMessage("Please you need to allow the app to access the permissions to operate smootthly.");
-                            alertDialog.setIcon(android.R.drawable.ic_btn_speak_now);
-                            alertDialog.show();
+                            return;
                         }
 
                     }

@@ -1,4 +1,4 @@
-package com.nikogreen.endelevu;
+package com.niko.endelevu;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

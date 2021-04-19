@@ -1,4 +1,4 @@
-package com.nikogreen.endelevu;
+package com.niko.endelevu;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.overrideideas.endelevu", appContext.getPackageName());
+        assertEquals("com.niko.endelevu", appContext.getPackageName());
     }
 }
