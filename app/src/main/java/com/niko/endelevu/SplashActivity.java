@@ -1,13 +1,10 @@
 package com.niko.endelevu;
 
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashActivity extends AppCompatActivity {
@@ -17,38 +14,27 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        new Handler().postDelayed(new Runnable() {
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_splash);
+        getSupportActionBar().hide();
+
+
+        Thread splashThread = new Thread(){
+
             @Override
             public void run() {
-                if(isInternetOn()){
-                    Intent i = new Intent(SplashActivity.this, MainActivity.class);
-                    startActivity(i);
+                try {
+                    sleep(3000);
+                    startActivity(new Intent(getApplicationContext(),MainActivity.class));
                     finish();
-                }
-                else{
-                    AlertDialog alertDialog= new AlertDialog.Builder(SplashActivity.this).create();
-                    alertDialog.setTitle("Network error");
-                    alertDialog.setMessage("Please Check your connection and try again !!");
-                    alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
-                    alertDialog.show();
-
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
 
             }
-        },3000);
-    }
-    public boolean isInternetOn(){
-        boolean connected=false;
-        try{
-            ConnectivityManager conn= (ConnectivityManager) getSystemService(getBaseContext().CONNECTIVITY_SERVICE);
-            NetworkInfo info=conn.getActiveNetworkInfo();
-            connected=info!=null && info.isAvailable() && info.isConnected();
-            return connected;
-        } catch (Exception e){
-            Log.e("Connectivity Exception", e.getMessage());
-        }
+        };
+        splashThread.start();
 
-        return  connected;
     }
-
 }
