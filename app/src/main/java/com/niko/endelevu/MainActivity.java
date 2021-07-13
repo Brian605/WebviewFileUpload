@@ -1,9 +1,9 @@
 package com.niko.endelevu;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,7 +24,6 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.DownloadListener;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -39,6 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -55,7 +55,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class MainActivity  extends AppCompatActivity {
     WebView webView;
-    private String webUrl = "https://www.endelevu.co.ke/";
+    private String webUrl = "https://www.endelevu.africa/";
     ProgressBar progressBarWeb;
     SweetAlertDialog sweetAlertDialog;
     RelativeLayout relativeLayout;
@@ -120,6 +120,7 @@ public class MainActivity  extends AppCompatActivity {
         return;
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,7 +130,7 @@ public class MainActivity  extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        webView = (WebView) findViewById(R.id.myWebView);
+        webView =findViewById(R.id.myWebView);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAllowContentAccess(true);
         webView.getSettings().setAllowFileAccess(true);
@@ -145,7 +146,13 @@ public class MainActivity  extends AppCompatActivity {
         relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         webView.setWebViewClient(new CustomWebClient(swipeRefreshLayout,MainActivity.this));
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                request.grant(request.getResources());
+            }
+        });
         webView.setWebChromeClient(new ChromeClient());
         if (Build.VERSION.SDK_INT >= 19) {
             webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -159,7 +166,7 @@ public class MainActivity  extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                checkConnection();
+                //checkConnection();
                 webView.reload();
             }
         });
@@ -194,52 +201,6 @@ public class MainActivity  extends AppCompatActivity {
                 }
             }
         });
-
-        webView.setDownloadListener(new DownloadListener() {
-            @Override
-            public void onDownloadStart(final String s, final String s1, final String s2, final String s3, long l) {
-
-                Dexter.withActivity(MainActivity.this)
-                        .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .withListener(new PermissionListener() {
-                            @Override
-                            public void onPermissionGranted(PermissionGrantedResponse response) {
-
-
-                                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(s));
-                                request.setMimeType(s3);
-                                String cookies = CookieManager.getInstance().getCookie(s);
-                                request.addRequestHeader("cookie",cookies);
-                                request.addRequestHeader("User-Agent",s1);
-                                request.setDescription("Downloading File.....");
-                                request.setTitle(URLUtil.guessFileName(s,s2,s3));
-                                request.allowScanningByMediaScanner();
-                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                request.setDestinationInExternalPublicDir(
-                                        Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(
-                                                s,s2,s3));
-                                DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                                downloadManager.enqueue(request);
-                                Toast.makeText(MainActivity.this, "Downloading File..", Toast.LENGTH_SHORT).show();
-
-                            }
-
-                            @Override
-                            public void onPermissionDenied(PermissionDeniedResponse response) {
-
-                            }
-
-                            @Override
-                            public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-
-                                token.continuePermissionRequest();
-                            }
-                        }).check();
-
-            }
-        });
-
-
 
 
         webView.setWebChromeClient(new WebChromeClient(){
@@ -310,6 +271,18 @@ public class MainActivity  extends AppCompatActivity {
                 return true;
             }
 
+            if(url.contains("play")){
+                Snackbar snackbar= Snackbar.make(swipeRefreshLayout,"You already have Endelevu Installed",Snackbar.LENGTH_LONG).setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(MainActivity.this,"OK",Toast.LENGTH_SHORT).show();
+                    }
+                });
+                snackbar.show();
+
+            }
+
+
 
             if (url.startsWith("tel:")){
                 Dexter.withActivity(MainActivity.this)
@@ -348,6 +321,112 @@ public class MainActivity  extends AppCompatActivity {
             return false;
         }
 
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if(webView.canGoBack()){
+            webView.goBack();
+        }
+        else
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Are you sure you want to Exit Endelevu?")
+                    .setNegativeButton("No",null)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                            finishAffinity();
+                        }
+                    }).show();
+        }
+    }
+
+    public void checkConnection(){
+
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobileNetwork = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+
+        if(wifi.isConnected()){
+            webView.loadUrl(webUrl);
+            webView.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+
+
+        }
+        else if (mobileNetwork.isConnected()){
+            webView.loadUrl(webUrl);
+            webView.setVisibility(View.VISIBLE);
+            relativeLayout.setVisibility(View.GONE);
+        }
+        else{
+
+            webView.setVisibility(View.GONE);
+            relativeLayout.setVisibility(View.VISIBLE);
+
+        }
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch(item.getItemId()){
+
+            case R.id.nav_previous:
+                onBackPressed();
+                break;
+
+            case R.id.nav_next:
+
+                if(webView.canGoForward()){
+                    webView.goForward();
+                }
+
+                break;
+
+            case R.id.nav_reload:
+                checkConnection();
+                webView.reload();
+                break;
+
+
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        webView.saveState(outState);
+    }
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File imageFile = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        return imageFile;
     }
     public class ChromeClient extends WebChromeClient {
         // For Android 5.0
@@ -439,107 +518,4 @@ public class MainActivity  extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if(webView.canGoBack()){
-            webView.goBack();
-        }
-        else
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Are you sure you want to Exit Endelevu?")
-                    .setNegativeButton("No",null)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                            finishAffinity();
-                        }
-                    }).show();
-        }
-    }
-
-    public void checkConnection(){
-
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo mobileNetwork = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-
-
-        if(wifi.isConnected()){
-            webView.loadUrl(webUrl);
-            webView.setVisibility(View.VISIBLE);
-            relativeLayout.setVisibility(View.GONE);
-
-
-        }
-        else if (mobileNetwork.isConnected()){
-            webView.loadUrl(webUrl);
-            webView.setVisibility(View.VISIBLE);
-            relativeLayout.setVisibility(View.GONE);
-        }
-        else{
-
-            webView.setVisibility(View.GONE);
-            relativeLayout.setVisibility(View.VISIBLE);
-
-        }
-
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu,menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        switch(item.getItemId()){
-
-            case R.id.nav_previous:
-                onBackPressed();
-                break;
-
-            case R.id.nav_next:
-
-                if(webView.canGoForward()){
-                    webView.goForward();
-                }
-
-                break;
-
-            case R.id.nav_reload:
-                checkConnection();
-                break;
-
-
-
-        }
-
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        webView.saveState(outState);
-    }
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        File imageFile = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-        return imageFile;
-    }
 }
