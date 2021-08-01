@@ -148,7 +148,9 @@ public class MainActivity  extends AppCompatActivity {
             }
         });
 
-
+/**This line
+ * @param MyWebChromeClient A class that implements WebChromeClient and handles its callbacks
+ */
         webView.setWebChromeClient(new MyWebChromeClient());
 
 
