@@ -144,36 +144,12 @@ public class MainActivity  extends AppCompatActivity {
         webView.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
             @Override
             public void onScrollChanged() {
-                if (webView.getScrollY() == 0) {
-                    swipeRefreshLayout.setEnabled(true);
-                } else {
-                    swipeRefreshLayout.setEnabled(false);
-                }
+                swipeRefreshLayout.setEnabled(webView.getScrollY() == 0);
             }
         });
 
 
-        webView.setWebChromeClient(new WebChromeClient(){
-
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-
-                progressBarWeb.setVisibility(View.VISIBLE);
-                progressBarWeb.setProgress(newProgress);
-                setTitle("Loading...");
-                sweetAlertDialog.show();
-                if(newProgress ==100){
-
-                    progressBarWeb.setVisibility(View.GONE);
-                    setTitle(view.getTitle());
-                    sweetAlertDialog.dismiss();
-
-                }
-
-
-                super.onProgressChanged(view, newProgress);
-            }
-        });
+        webView.setWebChromeClient(new MyWebChromeClient());
 
 
 
@@ -376,6 +352,24 @@ public class MainActivity  extends AppCompatActivity {
             startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
         }
 
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+
+            progressBarWeb.setVisibility(View.VISIBLE);
+            progressBarWeb.setProgress(newProgress);
+            setTitle("Loading...");
+            sweetAlertDialog.show();
+            if(newProgress ==100){
+
+                progressBarWeb.setVisibility(View.GONE);
+                setTitle(view.getTitle());
+                sweetAlertDialog.dismiss();
+
+            }
+
+
+            super.onProgressChanged(view, newProgress);
+        }
 
         // For Lollipop 5.0+ Devices
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
